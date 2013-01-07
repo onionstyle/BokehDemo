@@ -1,0 +1,49 @@
+﻿<phone:PhoneApplicationPage
+    x:Class="BokehDemo.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
+    xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    FontFamily="{StaticResource PhoneFontFamilyNormal}"
+    FontSize="{StaticResource PhoneFontSizeNormal}"
+    Foreground="{StaticResource PhoneForegroundBrush}"
+    SupportedOrientations="Portrait" Orientation="Portrait"
+    shell:SystemTray.IsVisible="True">
+
+    <!--LayoutRoot is the root grid where all page content is placed-->
+    <Grid x:Name="LayoutRoot" Background="Transparent">
+        <Grid x:Name="ShowClipGrid" Width="{Binding Path=ClipWidth}"  Height="{Binding Path=ClipHeight}"  Clip="{Binding Path=Clip}" Margin="{Binding Path=ClipMargin}" HorizontalAlignment="Left" VerticalAlignment="Top" >
+            <Grid x:Name="ImageGrid" Margin="{Binding Path=Margin}"  HorizontalAlignment="Left" VerticalAlignment="Top"  >
+                <Image x:Name="ShowImage" Source="{Binding Path=Source}"  Width="{Binding Path=Width}" Height="{Binding Path=Height}"    />
+                <Canvas x:Name="BokehCanvas"    Width="{Binding ElementName=ShowImage,Path=Width}" Height="{Binding ElementName=ShowImage,Path=Height}"   Clip="{Binding Path=Clip}" Visibility="{Binding Path=Visibility}" >
+
+                    <Grid  Width="{Binding Path=Width}" Height="{Binding Path=Height}" Margin="{Binding Path=Margin}" Visibility="{Binding Path=EllipseVisibility}" >
+                        <Ellipse  Fill="Transparent" Width="{Binding Path=InsideWidth}" Height="{Binding Path=InsideWidth}"  Stroke="White" StrokeThickness="5" VerticalAlignment="Center" HorizontalAlignment="Center"   />
+                        <Ellipse  Fill="Transparent" VerticalAlignment="Stretch"  HorizontalAlignment="Stretch" Stroke="White" StrokeThickness="5" />
+                    </Grid>
+
+                    <Grid  x:Name="BokehLineGrid"   Width="{Binding Path=Width}" Height="{Binding Path=Height}" Margin="{Binding Path=Margin}" Visibility="{Binding Path=LineVisibility}">
+                        <Grid.RenderTransform>
+                            <RotateTransform Angle="{Binding Angle}" CenterX="{Binding CenterX}" CenterY="{Binding CenterY}"     />
+                        </Grid.RenderTransform>
+                        <Rectangle Fill="Transparent"  Width="{Binding Path=InsideWidth}" Height="{Binding Path=Height}" HorizontalAlignment="Center" VerticalAlignment="Center"  StrokeThickness="5"  Stroke="White"  />
+                        <Rectangle  Fill="Transparent"  Width="{Binding Path=Width}" Height="{Binding Path=Height}" HorizontalAlignment="Center" VerticalAlignment="Center"  StrokeThickness="5"  Stroke="White"  />
+                    </Grid>
+                </Canvas>
+            </Grid>
+        </Grid>
+
+    </Grid>
+
+    <phone:PhoneApplicationPage.ApplicationBar>
+        <shell:ApplicationBar Mode="Default" Opacity="1.0" IsMenuEnabled="True" IsVisible="True">
+            <shell:ApplicationBarIconButton Click="Mode_Click" IconUri="/Assets/AppBar/appbar.add.rest.png" Text="mode" />
+            <shell:ApplicationBarIconButton Click="Open_Click" IconUri="/Images/save.png" Text="open" />
+            <shell:ApplicationBarIconButton Click="Save_Click" IconUri="/Images/save.png" Text="save" />
+            <shell:ApplicationBarIconButton Click="Settings_Click" IconUri="/Images/settings.png" Text="settings" />
+        </shell:ApplicationBar>
+    </phone:PhoneApplicationPage.ApplicationBar>
+</phone:PhoneApplicationPage>
