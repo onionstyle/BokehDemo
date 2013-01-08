@@ -6,16 +6,6 @@ namespace BokehDemo.Models
 {
     public class BokehData : INotifyPropertyChanged
     {
-        private double _value;
-        public double Value
-        {
-            get { return _value; }
-            set
-            {
-                _value = value;
-                RaisePropertyChanged("Value");
-            }
-        }
 
         private double _width;
         /// <summary>
@@ -28,7 +18,6 @@ namespace BokehDemo.Models
             {
                 _width = value;
                 RaisePropertyChanged("Width");
-                RaisePropertyChanged("CenterX");
             }
         }
 
@@ -40,7 +29,6 @@ namespace BokehDemo.Models
             {
                 _height = value;
                 RaisePropertyChanged("Height");
-                RaisePropertyChanged("CenterY");
             }
         }
 
@@ -55,13 +43,25 @@ namespace BokehDemo.Models
             }
         }
 
+        private double _centerX;
         public double CenterX
         {
             get { return _width / 2; }
+            set
+            {
+                _centerX = value;
+                RaisePropertyChanged("CenterX");
+            }
         }
+        private double _centerY;
         public double CenterY
         {
             get { return _height / 2; }
+            set
+            {
+                _centerY = value;
+                RaisePropertyChanged("CenterY");
+            }
         }
 
         /// <summary>

@@ -1,6 +1,6 @@
 ﻿using BokehDemo.Models;
 using System;
-using Windows.Foundation;
+using System.Windows;
 namespace BokehDemo.AppManager
 {
     /// <summary>
@@ -8,11 +8,10 @@ namespace BokehDemo.AppManager
     /// </summary>
     class GradientBase
     {
-        public virtual void Initialize(ImageControlData imageControl, BokehData bokehData,double width)
+        public virtual void Initialize(ImageControlData imageControl, BokehData bokehData)
         {
             if (_imageControl == null)
             {
-                _imageOriginWidth = width;
                 _imageControl = imageControl;
                 _bokehData = bokehData;
             }
@@ -43,7 +42,6 @@ namespace BokehDemo.AppManager
         /// <param name="width">新宽高</param>
         public virtual void ScaleRestrict(double width, BokehMode bokeh)
         {
-            _bokehData.Value = (_bokehData.Width - _bokehData.InsideWidth) / 2;
         }
 
         public virtual byte[] Process(bool isApply = false)
@@ -65,40 +63,15 @@ namespace BokehDemo.AppManager
         {
         }
 
-        /// <summary>
-        /// 根据当前点与中心点的向量计算角度
-        /// </summary>
-        public float Angle(Point p)
+        public double Radians(Point currPoint, Point pinPoint)
         {
-            double dx1, dx2, dy1, dy2;
-            float angle;
-            dx1 = 0;
-            dy1 = 1;
-
-            dx2 = p.X;
-            dy2 = p.Y;
-
-            float c = (float)Math.Sqrt(dx1 * dx1 + dy1 * dy1) * (float)Math.Sqrt(dx2 * dx2 + dy2 * dy2);
-            if (c == 0)
-                return 0;
-            float a = (float)(dx1 * dx2 + dy1 * dy2) / c;
-            if (a < -1) a = -1;
-            if (a > 1) a = 1;
-            angle = (float)Math.Acos(a);
-
-            angle = angle * 180 / (float)Math.PI;
-            if (dx2 < 0)
-            {
-                angle = -angle;
-            }
-            return angle;
+            return Math.Atan2(currPoint.Y - pinPoint.Y, currPoint.X - pinPoint.X);
         }
 
 
         #region Property
-        double _imageOriginWidth;
         //界面的缩放比
-        protected double _scaleRale { get { return (double)_imageOriginWidth / _imageControl.Width; } }
+        protected double _scaleRale { get { return (double)DataManager.Instance.ThumbData.PixelWidth / _imageControl.Width; } }
 
         /// <summary>
         /// 当前点与中心的x,y差值
@@ -110,7 +83,7 @@ namespace BokehDemo.AppManager
         /// <summary>
         /// 内部最小宽度
         /// </summary>
-        protected int _minWidth = 100;
+        protected int _minWidth = 10;
 
         protected BokehMode _bokehMode;
         public BokehMode Mode

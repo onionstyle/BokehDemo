@@ -5,16 +5,15 @@ namespace BokehDemo.AppManager
 {
     class EllipseGradient:GradientBase
     {
-        public override void Initialize(ImageControlData imageControl, BokehData bokehData,double width)
+        public override void Initialize(ImageControlData imageControl, BokehData bokehData)
         {
-            base.Initialize(imageControl, bokehData, width);
+            base.Initialize(imageControl, bokehData);
             _bokehData.EllipseVisibility = Visibility.Visible;
             _bokehData.LineVisibility = Visibility.Collapsed;
             _bokehData.Width = 300;
             _bokehData.Height = 300;
             _bokehData.InsideWidth = 200;
             _bokehData.Margin = new Thickness((_imageControl.Width - _bokehData.Width) / 2, (_imageControl.Height - _bokehData.Height) / 2, 0, 0);
-
         }
 
         public override void ReSet()
@@ -22,13 +21,13 @@ namespace BokehDemo.AppManager
             _bokehData.Margin = new Thickness((_imageControl.Width - _bokehData.Width) / 2, (_imageControl.Height - _bokehData.Height) / 2, 0, 0);
         }
 
-        //public override void ModeMove(Point p)
-        //{
-        // //   base.ModeMove(p);
-        //    double width = Math.Sqrt(_disCen.X * _disCen.X + _disCen.Y * _disCen.Y);
-        //    width += width;
-        //    ScaleRestrict(width, _bokehMode);
-        //}
+        public override void ModeMove(Point p)
+        {
+            base.ModeMove(p);
+            double width = Math.Sqrt(_disCen.X * _disCen.X + _disCen.Y * _disCen.Y);
+            width += width;
+            ScaleRestrict(width, _bokehMode);
+        }
 
         public override void ScaleRestrict(double width, BokehMode bokeh)
         {

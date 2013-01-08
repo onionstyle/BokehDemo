@@ -15,31 +15,52 @@
 
     <!--LayoutRoot is the root grid where all page content is placed-->
     <Grid x:Name="LayoutRoot" Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="80*" />
+            <RowDefinition Height="20*" />
+        </Grid.RowDefinitions>
+        
         <Grid x:Name="ShowClipGrid" Width="{Binding Path=ClipWidth}"  Height="{Binding Path=ClipHeight}"  Clip="{Binding Path=Clip}" Margin="{Binding Path=ClipMargin}" HorizontalAlignment="Left" VerticalAlignment="Top" >
-            <Grid x:Name="ImageGrid" Margin="{Binding Path=Margin}"  HorizontalAlignment="Left" VerticalAlignment="Top"  >
-                <Image x:Name="ShowImage" Source="{Binding Path=Source}"  Width="{Binding Path=Width}" Height="{Binding Path=Height}"    />
+            <Grid  x:Name="ImageGrid" Margin="{Binding Path=Margin}"  HorizontalAlignment="Left" VerticalAlignment="Top"     ManipulationStarted="ImageGrid_ManipulationStarted" ManipulationDelta="ImageGrid_ManipulationDelta" ManipulationCompleted="ImageGrid_ManipulationCompleted"  >
+                 <Image x:Name="ShowImage" Source="{Binding Path=Source}"  Width="{Binding Path=Width}" Height="{Binding Path=Height}"    />
                 <Canvas x:Name="BokehCanvas"    Width="{Binding ElementName=ShowImage,Path=Width}" Height="{Binding ElementName=ShowImage,Path=Height}"   Clip="{Binding Path=Clip}" Visibility="{Binding Path=Visibility}" >
 
-                    <Grid  Width="{Binding Path=Width}" Height="{Binding Path=Height}" Margin="{Binding Path=Margin}" Visibility="{Binding Path=EllipseVisibility}" >
-                        <Ellipse  Fill="Transparent" Width="{Binding Path=InsideWidth}" Height="{Binding Path=InsideWidth}"  Stroke="White" StrokeThickness="5" VerticalAlignment="Center" HorizontalAlignment="Center"   />
-                        <Ellipse  Fill="Transparent" VerticalAlignment="Stretch"  HorizontalAlignment="Stretch" Stroke="White" StrokeThickness="5" />
+                    <Grid  Width="{Binding Path=Width}" Height="{Binding Path=Height}" Margin="{Binding Path=Margin}" Visibility="{Binding Path=EllipseVisibility}"  >
+                        <Ellipse  Fill="Transparent"  Width="{Binding Path=InsideWidth}" Height="{Binding Path=InsideWidth}"  Stroke="White" StrokeThickness="5" VerticalAlignment="Center" HorizontalAlignment="Center" MouseMove="Inside_MouseMove"     />
+                        <Ellipse  Fill="Transparent"  VerticalAlignment="Stretch"  HorizontalAlignment="Stretch" Stroke="White" StrokeThickness="5" MouseMove="Outside_MouseMove" MouseLeave="Outside_MouseLeave"  />
                     </Grid>
 
                     <Grid  x:Name="BokehLineGrid"   Width="{Binding Path=Width}" Height="{Binding Path=Height}" Margin="{Binding Path=Margin}" Visibility="{Binding Path=LineVisibility}">
                         <Grid.RenderTransform>
-                            <RotateTransform Angle="{Binding Angle}" CenterX="{Binding CenterX}" CenterY="{Binding CenterY}"     />
+                            <RotateTransform Angle="{Binding Angle}" CenterX="{Binding CenterX}" CenterY="{Binding CenterY}"      />
                         </Grid.RenderTransform>
-                        <Rectangle Fill="Transparent"  Width="{Binding Path=InsideWidth}" Height="{Binding Path=Height}" HorizontalAlignment="Center" VerticalAlignment="Center"  StrokeThickness="5"  Stroke="White"  />
-                        <Rectangle  Fill="Transparent"  Width="{Binding Path=Width}" Height="{Binding Path=Height}" HorizontalAlignment="Center" VerticalAlignment="Center"  StrokeThickness="5"  Stroke="White"  />
+                        <Rectangle   Fill="Transparent"  Width="{Binding Path=InsideWidth}" Height="{Binding Path=Height}" HorizontalAlignment="Center" VerticalAlignment="Center"  StrokeThickness="5"  Stroke="White" MouseMove="Inside_MouseMove"   />
+                        <Rectangle  Fill="Transparent"     Width="{Binding Path=Width}" Height="{Binding Path=Height}" HorizontalAlignment="Center" VerticalAlignment="Center"  StrokeThickness="5"  Stroke="White" MouseMove="Outside_MouseMove" MouseLeave="Outside_MouseLeave" />
                     </Grid>
-                </Canvas>
+                 </Canvas>
             </Grid>
+
+
         </Grid>
 
+        <Grid  Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50*" />
+                <RowDefinition Height="50*" />
+            </Grid.RowDefinitions>
+            <Grid>
+                <TextBlock Text="范围" FontSize="24" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="70,0,0,10" />
+                <Slider  Value="50" Minimum="0" Maximum="100" Width="300" Height="25" Background="#7FD6D6D6"   Foreground="#B2ABD5F1"    ValueChanged="OutSideSlider_ValueChanged"  Style="{StaticResource SliderStyle}" Margin="142,21,38,24"  />
+           </Grid>
+            <Grid  Grid.Row="1" >
+                <TextBlock Text="大小"  FontSize="24" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="70,0,0,10" />
+                <Slider  Value="50" Minimum="0" Maximum="100" Width="300" Height="25" Background="#7FD6D6D6"   Foreground="#B2ABD5F1"    ValueChanged="InSideSlider_ValueChanged"  Style="{StaticResource SliderStyle}" Margin="142,21,38,24"  />
+            </Grid>
+        </Grid>
     </Grid>
 
     <phone:PhoneApplicationPage.ApplicationBar>
-        <shell:ApplicationBar Mode="Default" Opacity="1.0" IsMenuEnabled="True" IsVisible="True">
+        <shell:ApplicationBar Mode="Default" Opacity="1.0" IsMenuEnabled="False" IsVisible="True">
             <shell:ApplicationBarIconButton Click="Mode_Click" IconUri="/Assets/AppBar/appbar.add.rest.png" Text="mode" />
             <shell:ApplicationBarIconButton Click="Open_Click" IconUri="/Images/save.png" Text="open" />
             <shell:ApplicationBarIconButton Click="Save_Click" IconUri="/Images/save.png" Text="save" />
