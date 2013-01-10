@@ -5,6 +5,9 @@ using System.Windows.Media;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Diagnostics;
+using Windows.Storage.Streams;
+using System.Windows.Controls;
+using System.Windows.Shapes;
 namespace BokehDemo.AppManager
 {
     class BokehManager
@@ -13,6 +16,9 @@ namespace BokehDemo.AppManager
         {
             _photoChooserTask = new PhotoChooserTask();
             _photoChooserTask.Completed += new EventHandler<PhotoResult>(photoChooserTask_Completed);
+
+            _bokehData = new BokehData();
+            _bokehData.PropertyChanged += BokehControl_PropertyChanged;
         }
 
         /// <summary>
@@ -24,14 +30,18 @@ namespace BokehDemo.AppManager
             _imageControl.ClipWidth = DataManager.Instance.MaxWidth;
             _imageControl.ClipHeight = DataManager.Instance.MaxHeight;
             _imageControl.Clip = new RectangleGeometry() { Rect = new Rect(0, 0, _imageControl.ClipWidth, _imageControl.ClipHeight) };
-            _imageControl.ClipMargin = new Thickness(0, 0, 0, 0);
-            _imageControl.PropertyChanged += ImageControl_PropertyChanged;
         }
 
         public void OpenImage()
         {
             _photoChooserTask.Show();
         }
+
+        public void SaveImage()
+        {
+            _gradientBase.SaveGradient();
+        }
+
         private void photoChooserTask_Completed(object sender, PhotoResult e)
         {
             if (e.TaskResult == TaskResult.OK)
@@ -40,6 +50,10 @@ namespace BokehDemo.AppManager
                 bmp.SetSource(e.ChosenPhoto);
                 DataManager.Instance.SetMainData(new WriteableBitmap(bmp));
                 ShowImage();
+                //蒙版
+                _bokehData.MaskBrush = new SolidColorBrush() {Color = Color.FromArgb(255, 218, 81, 81) };
+
+                ModeChanger();
             }
         }
 
@@ -114,66 +128,89 @@ namespace BokehDemo.AppManager
             switch (typename)
             {
                 case "EllipseGradient":
-                    _gradientBase = _linerGradient ?? (_linerGradient = new LinerGradient());
+                    if (_linerGradient == null)
+                    {
+                        _linerGradient = new LinerGradient(_imageControl, _bokehData);
+                        _gradientBase = _linerGradient;
+                        _bokehData.SetData(_gradientBase.GetType().Name);
+                        _linerGradient.Initialize(_imageControl.Height * 2 / 3, _imageControl.Height);
+                        return;
+                    }
+                    _gradientBase = _linerGradient;
                     break;
-
                 case "LinerGradient":
                     _gradientBase = _ellipseGradient;
                     break;
                 default:
-                    _gradientBase = _ellipseGradient ?? (_ellipseGradient = new EllipseGradient());
+                    if (_ellipseGradient == null)
+                    {
+                        _ellipseGradient = new EllipseGradient(_imageControl, _bokehData);
+                        _gradientBase = _ellipseGradient;
+                        _ellipseGradient.Initialize(_imageControl.Width / 3, _imageControl.Width);
+                    }
                     break;
             }
-            _gradientBase.Initialize(_imageControl, _bokehData);
+            _bokehData.SetData(_gradientBase.GetType().Name);
+            SetGradient();
+        }
+
+        public void SetPrePoint(Point p)
+        {
+           _prePosition = p;
         }
 
         /// <summary>
         /// 移动图形
         /// </summary>
-        /// <param name="p">left-top改变值</param>
+        /// <param name="p">新位置</param>
         public void PositionChange(Point p)
         {
-            if (_bokehMode == BokehMode.None)
-                return;
             //中心点距离边距的大小
-            p.X = _bokehData.Margin.Left + p.X + _bokehData.Width / 2;
-            p.Y = _bokehData.Margin.Top + p.Y + _bokehData.Height / 2;
+            Point discenter = new Point(_bokehData.Margin.Left + _bokehData.Width / 2 + p.X - _prePosition.X, _bokehData.Margin.Top + _bokehData.Height / 2 + p.Y - _prePosition.Y);
+            _prePosition = p;
 
-            if (p.X < 0 || p.X > _imageControl.Width)
-            {
-                p.X = _bokehData.Margin.Left + _bokehData.Width / 2;
-            }
+            _gradientBase.Translation(discenter);
 
-            if (p.Y < 0 || p.Y > _imageControl.Height)
+             SetGradient();
+        }
+
+        //缩放
+        public void ScaleChange(double scale)
+        {
+            double value;
+            switch (_bokehMode)
             {
-                p.Y = _bokehData.Margin.Top + _bokehData.Height / 2;
+                case BokehMode.InsideMode:
+                    value = _bokehData.InsideValue * scale;
+                    if (value > 0 && value < 100)
+                        _bokehData.InsideValue = value;
+                    break;
+                case BokehMode.OutsideMode:
+                    value = _bokehData.OutsideValue * scale;
+                    if (value > 0 && value < 100)
+                        _bokehData.OutsideValue = value;
+                    break;
             }
-            _bokehData.Margin = new Thickness(p.X - _bokehData.Width / 2, p.Y - _bokehData.Height / 2, 0, 0);
-         
         }
-        public void SetPreAngle()
+
+        public void RotationChange(Point currPoint, Point pinPoint, Point center)
         {
-            _preAngle = 0;
-        }
-        /// <summary>
-        /// 拉动旋转变化,需要先设置变化初始角度SetPreAngle()
-        /// </summary>
-        public void RotationChange(Point currPoint,Point pinPoint,Point center)
-        {
-            if (_preAngle == 0)
+            if (_gradientBase is EllipseGradient) return;
+            if (_bokehMode==BokehMode.None||_preAngle == 0)
             {
                 _preAngle = _gradientBase.Radians(currPoint, pinPoint);
                 return;
             }
-
-            Debug.WriteLine("(" + currPoint.X + "," + currPoint.Y + ")" + "(" + pinPoint.X + "," + pinPoint.Y + ")");
             double curAngle = _gradientBase.Radians(currPoint, pinPoint);
             double deltaAngle = 180 * (curAngle - _preAngle) / Math.PI;
+            _preAngle = 0;
+            if (deltaAngle > 30 || deltaAngle < -30) return;
+            _bokehData.Angle += deltaAngle;
+        }
 
-            _bokehData.CenterX = _bokehData.Margin.Left + center.X;
-            _bokehData.CenterY = _bokehData.Margin.Top + center.Y;
-            _bokehData.Angle +=deltaAngle;
-            _preAngle = curAngle;
+        public void SetGradient()
+        {
+            _gradientBase.SetGradient();
         }
 
         public void SetMode(BokehMode bokehMode)
@@ -181,45 +218,45 @@ namespace BokehDemo.AppManager
             if (_bokehMode != bokehMode)
             {
                 _bokehMode = bokehMode;
-                _gradientBase.Mode = bokehMode;
             }
         }
 
-        public void InsideValueChanged(double value)
+        public void SetOpacity(double opacity)
         {
-            double width = value*DataManager.Instance.MaxWidth/100;
-            if (width == _bokehData.InsideWidth) return;
-            BokehMode bokehMode = BokehMode.InsideMode;
-            _gradientBase.ScaleRestrict(width, bokehMode);
-        }
-        public void OutsideValueChanged(double value)
-        {
-            double width = value * DataManager.Instance.MaxWidth / 100 + _bokehData.InsideWidth;
-            if (width == _bokehData.Width) return;
-            //改变外圈
-            BokehMode bokehMode = BokehMode.OutsideMode;
-            _gradientBase.ScaleRestrict(width, bokehMode);
+            _bokehData.Opacity = opacity;
         }
 
-        private void ImageControl_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void BokehControl_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "Width" || e.PropertyName == "Height")
+            double width;
+            BokehMode bokehMode;
+            switch (e.PropertyName)
             {
-                _bokehData.Clip = new RectangleGeometry() { Rect = new Rect(0, 0, _imageControl.Width, _imageControl.Height) };
-                if (_gradientBase != null)
-                {
-                    Restrict();
-                    //设置ImageGrid边距使其居中
-                    _imageControl.Margin = new Thickness((_imageControl.ClipWidth - _imageControl.Width) / 2, (_imageControl.ClipHeight - _imageControl.Height) / 2, 0, 0);
-
-                    _gradientBase.ReSet();
-                }
+                case "InsideValue":
+                    width = _bokehData.InsideValue * DataManager.Instance.MaxWidth / 100;
+                    if (width == _bokehData.InsideWidth) return;
+                    bokehMode = BokehMode.InsideMode;
+                    _gradientBase.ScaleRestrict(width, bokehMode);
+                    SetGradient();
+                    break;
+                case "OutsideValue":
+                    width = _bokehData.OutsideValue * DataManager.Instance.MaxWidth / 100 + _bokehData.InsideWidth;
+                    if (width == _bokehData.Width) return;
+                    //改变外圈
+                    bokehMode = BokehMode.OutsideMode;
+                    _gradientBase.ScaleRestrict(width, bokehMode);
+                    SetGradient();
+                    break;
             }
         }
-
 
         #region Properties
+
         BokehMode _bokehMode;
+        /// <summary>
+        /// 起始位置
+        /// </summary>
+        private Point _prePosition;
         /// <summary>
         /// 起始旋转角度
         /// </summary>
@@ -233,7 +270,7 @@ namespace BokehDemo.AppManager
         /// <summary>
         /// 图片数据绑定
         /// </summary>
-        protected ImageControlData _imageControl = null;
+        protected ImageControlData _imageControl;
         public ImageControlData ImageControlBindingData
         {
             get { return _imageControl ?? (_imageControl = new ImageControlData()); }
@@ -241,10 +278,10 @@ namespace BokehDemo.AppManager
         /// <summary>
         /// 虚化显示数据绑定
         /// </summary>
-        protected BokehData _bokehData = null;
+        protected BokehData _bokehData;
         public BokehData BokehBindingData
         {
-            get { return _bokehData ?? (_bokehData = new BokehData()); }
+            get { return _bokehData; }
         }
         #endregion
     }
@@ -266,10 +303,5 @@ namespace BokehDemo.AppManager
         /// 外部的缩放
         /// </summary>
         OutsideMode,
-
-        /// <summary>
-        /// 矩形旋转
-        /// </summary>
-        RotaMode,
     }
 }

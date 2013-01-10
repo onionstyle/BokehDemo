@@ -5,44 +5,36 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 
 namespace BokehDemo.AppManager
 {
-    class LinerGradient:GradientBase
+    class LinerGradient : GradientBase
     {
-        public override void Initialize(ImageControlData imageControl, BokehData bokehData)
+        public LinerGradient(ImageControlData imageControl, BokehData bokehData)
         {
-            base.Initialize(imageControl, bokehData);
-            _bokehData.EllipseVisibility = Visibility.Collapsed;
-            _bokehData.LineVisibility = Visibility.Visible;
-            _bokehData.Width = 400;
-            _bokehData.Height = Math.Sqrt(_imageControl.Width * _imageControl.Width + _imageControl.Height * _imageControl.Height);
-            _bokehData.Height += _bokehData.Height;
-            _bokehData.Margin = new Thickness((_imageControl.Width - _bokehData.Width) / 2, -(_bokehData.Height - _imageControl.Height) / 2, 0, 0);
-            _bokehData.Angle = 0;
-            _bokehData.InsideWidth = 200;
+            _imageControl = imageControl;
+            _bokehData = bokehData;
         }
 
-        public override void ReSet()
+        public override void Initialize(double insideWidth, double outsideWidth)
         {
+            _bokehData.Clip = new RectangleGeometry() { Rect = new Rect(0, 0, _imageControl.Width, _imageControl.Height) };
             _bokehData.Height = Math.Sqrt(_imageControl.Width * _imageControl.Width + _imageControl.Height * _imageControl.Height);
             _bokehData.Height += _bokehData.Height;
+
+            _bokehData.Opacity = 1;
+            _bokehData.Angle = 90;
+            _bokehData.InsideWidth = insideWidth;
+            _bokehData.Width = outsideWidth; 
             _bokehData.Margin = new Thickness((_imageControl.Width - _bokehData.Width) / 2, -(_bokehData.Height - _imageControl.Height) / 2, 0, 0);
-        }
 
-        public override void ModeMove(Point p)
-        {
-            //base.ModeMove(p);
-            ////计算线到中心垂直时中心到点与横线的夹角
-            //double angle = _bokehData.Angle - Angle(_disCen,new Point(0,1));
-            //double sin = Math.Sin(angle * Math.PI / 180);
-            //double lengthX = _centerX - p.X;
-            //double lengthY = _centerY - p.Y;
-            ////垂直距离
-            //double length = Math.Sqrt(lengthX * lengthX + lengthY * lengthY) * sin;
-
-            //double width = Math.Abs(length + length);
-            //ScaleRestrict(width, _bokehMode);
+            _bokehData.InsideValue = 100 * insideWidth / DataManager.Instance.MaxWidth;
+            _bokehData.OutsideValue = 100 *( outsideWidth-insideWidth) / DataManager.Instance.MaxWidth;
+            SetGradient();
         }
 
         public override void ScaleRestrict(double width, BokehMode bokeh)
@@ -64,9 +56,87 @@ namespace BokehDemo.AppManager
                     {
                         _bokehData.Margin = new Thickness(_bokehData.Margin.Left - (width - _bokehData.Width) / 2, _bokehData.Margin.Top, 0, 0);
                         _bokehData.Width = width;
-                    } break;
+
+                    }
+                    break;
             }
-            base.ScaleRestrict(width, bokeh);
+            SetGradient();
+        }
+
+        public override void SetGradient()
+        {
+            base.SetGradient();
+            double centerX = _centerX * _scaleRale; ;
+            double centerY = _centerY * _scaleRale; ;
+            double insideLength = (_bokehData.InsideWidth / 2) * _scaleRale;
+            double outsideLength = (_bokehData.Width / 2) * _scaleRale;
+
+            //与中心点坐标差值
+            double inLinDevX = insideLength * Math.Cos(_bokehData.Angle * Math.PI / 180);
+            double inLinDevY = insideLength * Math.Sin(_bokehData.Angle * Math.PI / 180);
+            double outLinDevX = outsideLength * Math.Cos(_bokehData.Angle * Math.PI / 180);
+            double outLinDevY = outsideLength * Math.Sin(_bokehData.Angle * Math.PI / 180);
+            //外线坐标
+            double outsideLinX = centerX + outLinDevX;
+            double outsideLinY = centerY + outLinDevY;
+
+            _bokehData.StarPoint = new Point(centerX / _imageControl.Width, centerY / _imageControl.Height);
+            _bokehData.EndPoint = new Point(outsideLinX / _imageControl.Width, outsideLinY / _imageControl.Height);
+
+        }
+
+        public override void SaveGradient()
+        {
+            double rate = DataManager.Instance.MainData.PixelWidth / _bokehData.Width;
+
+            GradientStopCollection collection = new GradientStopCollection();
+            collection.Add(new GradientStop() { Color = Colors.Transparent, Offset = _bokehData.Rate });
+            collection.Add(new GradientStop() { Color = Color.FromArgb(128, 0, 0, 0), Offset = _bokehData.Rate });
+            collection.Add(new GradientStop() { Color = Color.FromArgb(255, 0, 0, 0), Offset = 1 });
+
+            LinearGradientBrush brush = new LinearGradientBrush()
+            {
+                StartPoint = _bokehData.StarPoint,
+                EndPoint = _bokehData.EndPoint,
+                GradientStops = collection,
+            };
+            Rectangle rectangle = new Rectangle()
+            {
+                Width = DataManager.Instance.MainData.PixelWidth,
+                Height = DataManager.Instance.MainData.PixelHeight,
+                Fill = _bokehData.MaskBrush,
+                OpacityMask = brush
+            };
+
+            GradientStopCollection backcollection = new GradientStopCollection();
+            backcollection.Add(new GradientStop() { Color = Colors.Transparent, Offset = _bokehData.Rate });
+            backcollection.Add(new GradientStop() { Color = Color.FromArgb(128, 0, 0, 0), Offset = _bokehData.Rate });
+            backcollection.Add(new GradientStop() { Color = Color.FromArgb(255, 0, 0, 0), Offset = 1 });
+            LinearGradientBrush backBrush = new LinearGradientBrush()
+            {
+                StartPoint = _bokehData.StarPoint,
+                EndPoint = _bokehData.BackEndPoint,
+                GradientStops = backcollection,
+            };
+            Rectangle backRectangle = new Rectangle()
+            {
+                Width = rectangle.Width,
+                Height = rectangle.Height,
+                Fill = rectangle.Fill,
+                OpacityMask = backBrush
+            };
+
+            Canvas saveCanvas = new Canvas()
+            {
+                Width = rectangle.Width,
+                Height = rectangle.Height,
+                Background = new ImageBrush() { ImageSource = DataManager.Instance.MainData },
+            };
+            saveCanvas.Children.Add(rectangle);
+            saveCanvas.Children.Add(backRectangle);
+
+            WriteableBitmap bmp = new WriteableBitmap(saveCanvas, null);
+            DataManager.Instance.SaveToFile(bmp);
         }
     }
 }

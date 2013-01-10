@@ -47,7 +47,7 @@ namespace BokehDemo.AppManager
             _thumbData = _mainData.Resize(Convert.ToInt32(tempWidth), Convert.ToInt32(tempHeight), WriteableBitmapExtensions.Interpolation.NearestNeighbor);
         }
 
-        public void SaveToFile()
+        public void SaveToFile(WriteableBitmap bmp)
         {
             //Create filename for JPEG in isolated storage
             String tempJPEG = String.Format("MTXX_{0:yyyyMMddHHmmss}.jpg", DateTime.Now);
@@ -61,7 +61,7 @@ namespace BokehDemo.AppManager
             IsolatedStorageFileStream myFileStream = myStore.CreateFile(tempJPEG);
 
             //Encode the WriteableBitmap into JPEG stream and place into isolated storage.
-            Extensions.SaveJpeg(_mainData, myFileStream, _mainData.PixelWidth, _mainData.PixelHeight, 0, 85);
+            Extensions.SaveJpeg(bmp, myFileStream, bmp.PixelWidth, bmp.PixelHeight, 0, 85);
             myFileStream.Close();
 
             //Create a new file stream.
@@ -98,7 +98,7 @@ namespace BokehDemo.AppManager
         /// <summary>
         /// 图片显示最大高度
         /// </summary>
-        int _maxHeight =(int)Application.Current.Host.Content.ActualHeight-104;//减去Appbar
+        int _maxHeight = (int)Application.Current.Host.Content.ActualHeight - 104 - 139;//减去Appbar&&slider
         public int MaxHeight
         {
             get { return _maxHeight; }

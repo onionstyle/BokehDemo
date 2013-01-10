@@ -10,6 +10,7 @@ namespace BokehDemo.Models
     /// </summary>
     public class ImageControlData : INotifyPropertyChanged
     {
+        #region Properties
         private RectangleGeometry _clip;
 
         /// <summary>
@@ -41,6 +42,8 @@ namespace BokehDemo.Models
         private Thickness _margin;
 
         private ImageSource _imageSource;
+
+        #endregion
 
         public RectangleGeometry Clip
         {

@@ -99,11 +99,14 @@
     <Compile Include="AppManager\LinerGradient.cs" />
     <Compile Include="Models\BokehData.cs" />
     <Compile Include="AppManager\BokehManager.cs" />
+    <Compile Include="Models\CommonData.cs" />
+    <Compile Include="Models\EllipseData.cs" />
     <Compile Include="Models\ImageControlData.cs" />
     <Compile Include="LocalizedStrings.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Models\LinerData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\AppResources.Designer.cs">
       <AutoGen>True</AutoGen>

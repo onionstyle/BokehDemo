@@ -1,34 +1,34 @@
 ﻿using BokehDemo.Models;
 using System;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 namespace BokehDemo.AppManager
 {
-    class EllipseGradient:GradientBase
+    class EllipseGradient : GradientBase
     {
-        public override void Initialize(ImageControlData imageControl, BokehData bokehData)
+        public EllipseGradient(ImageControlData imageControl, BokehData bokehData)
         {
-            base.Initialize(imageControl, bokehData);
-            _bokehData.EllipseVisibility = Visibility.Visible;
-            _bokehData.LineVisibility = Visibility.Collapsed;
-            _bokehData.Width = 300;
-            _bokehData.Height = 300;
-            _bokehData.InsideWidth = 200;
+            _imageControl = imageControl;
+            _bokehData = bokehData;
+        }
+
+        public override void Initialize(double insideWidth,double outsideWidth)
+        {
+            _bokehData.Clip = new RectangleGeometry() { Rect = new Rect(0, 0, _imageControl.Width, _imageControl.Height) };
+         
+            _bokehData.Opacity = 1;
+            _bokehData.Width = outsideWidth;
+            _bokehData.Height = outsideWidth;
+            _bokehData.InsideWidth = insideWidth;
             _bokehData.Margin = new Thickness((_imageControl.Width - _bokehData.Width) / 2, (_imageControl.Height - _bokehData.Height) / 2, 0, 0);
-        }
 
-        public override void ReSet()
-        {
-            _bokehData.Margin = new Thickness((_imageControl.Width - _bokehData.Width) / 2, (_imageControl.Height - _bokehData.Height) / 2, 0, 0);
+            _bokehData.InsideValue = 100 * insideWidth / DataManager.Instance.MaxWidth;
+            _bokehData.OutsideValue = 100 *( outsideWidth-insideWidth) / DataManager.Instance.MaxWidth; 
         }
-
-        public override void ModeMove(Point p)
-        {
-            base.ModeMove(p);
-            double width = Math.Sqrt(_disCen.X * _disCen.X + _disCen.Y * _disCen.Y);
-            width += width;
-            ScaleRestrict(width, _bokehMode);
-        }
-
+    
         public override void ScaleRestrict(double width, BokehMode bokeh)
         {
             switch (bokeh)
@@ -47,36 +47,54 @@ namespace BokehDemo.AppManager
                         _bokehData.Width = _bokehData.Height = width;
                     } break;
             }
-            base.ScaleRestrict(width, bokeh);
         }
 
-        public override byte[] Process(bool isApply = false)
+        public override void SetGradient()
         {
-            base.Process(isApply);
+            base.SetGradient();
             double centerX = _centerX * _scaleRale;
             double centerY = _centerY * _scaleRale;
-            double insideLength = (_bokehData.InsideWidth / 2) * _scaleRale;
-            double outsideLength = (_bokehData.Width / 2) * _scaleRale;
 
-            byte[] data = null;
-            //主图与缩略图比例
-            float scale = 1;
-            if (isApply)
+            _bokehData.StarPoint = new Point(centerX / _imageControl.Width, centerY / _imageControl.Height);
+
+            _bokehData.RadiusX = _bokehData.Width / (_imageControl.Width + _imageControl.Width);
+            _bokehData.RadiusY = _bokehData.Width / (_imageControl.Height + _imageControl.Height);
+        }
+
+        public override void SaveGradient()
+        {
+            double rate = DataManager.Instance.MainData.PixelWidth / _bokehData.Width;
+
+            GradientStopCollection collection = new GradientStopCollection();
+            collection.Add(new GradientStop() { Color = Colors.Transparent, Offset = _bokehData.Rate });
+            collection.Add(new GradientStop() { Color = Color.FromArgb(128, 0, 0, 0), Offset = _bokehData.Rate });
+            collection.Add(new GradientStop() { Color = Color.FromArgb(255, 0, 0, 0), Offset = 1 });
+
+            RadialGradientBrush brush = new RadialGradientBrush()
             {
-            //    scale = (float)FaceMainManager.Instance.MainWidth / FaceMainManager.Instance.ThumbWidth;
-                //因为灰度对byte直接操作，所以不能直接将主图数据应用
-          //      data = new byte[FaceMainManager.Instance.MainData.Length];
-           //     FaceMainManager.Instance.MainData.CopyTo(data, 0);
-            }
-            if (data != null)
+                GradientOrigin = _bokehData.StarPoint,
+                Center = _bokehData.StarPoint,
+                RadiusX = _bokehData.RadiusX,
+                RadiusY = _bokehData.RadiusY,
+                GradientStops = collection,
+            };
+            Rectangle rectangle = new Rectangle()
             {
-           //     data = _gradient.RadiusApply(data, FaceMainManager.Instance.MainWidth, FaceMainManager.Instance.MainHeight, (float)centerX * scale, (float)centerY * scale, (float)insideLength * scale, (float)outsideLength * scale);
-            }
-            else
+                Width = DataManager.Instance.MainData.PixelWidth,
+                Height = DataManager.Instance.MainData.PixelHeight,
+                Fill = _bokehData.MaskBrush,
+                OpacityMask = brush
+            };
+            Canvas saveCanvas = new Canvas()
             {
-           //     data = _gradient.RadiusGradient((float)centerX, (float)centerY, (float)insideLength, (float)outsideLength);
-            }
-            return data;
+                Width = rectangle.Width,
+                Height = rectangle.Height,
+                Background = new ImageBrush() { ImageSource = DataManager.Instance.MainData },
+            };
+            saveCanvas.Children.Add(rectangle);
+
+            WriteableBitmap bmp = new WriteableBitmap(saveCanvas, null);
+            DataManager.Instance.SaveToFile(bmp);
         }
     }
 }

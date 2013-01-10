@@ -37,7 +37,7 @@
 									<RectangleGeometry Rect="0, 0,6,100"/>
 								</Rectangle.Clip>
 							</Rectangle>
-							<Rectangle x:Name="HorizontalCenterElement" Fill="{StaticResource PhoneForegroundBrush}" HorizontalAlignment="Left"  Width="16" RadiusX="5" RadiusY="5" Stroke="Black">
+							<Rectangle x:Name="HorizontalCenterElement" Fill="{StaticResource PhoneForegroundBrush}" HorizontalAlignment="Left"  Width="25" RadiusX="5" RadiusY="5" Stroke="Black">
 								<Rectangle.RenderTransform>
 									<TranslateTransform/>
 								</Rectangle.RenderTransform>
