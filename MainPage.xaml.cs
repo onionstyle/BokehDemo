@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows;
 using Windows.Storage;
 using System.Windows.Threading;
+using Microsoft.Xna.Framework.Input.Touch;
 namespace BokehDemo
 {
     public partial class MainPage : PhoneApplicationPage
@@ -16,9 +17,11 @@ namespace BokehDemo
         public MainPage()
         {
             InitializeComponent();
+            TouchPanel.EnabledGestures = GestureType.FreeDrag;
+
             InitializeBinding();
-            _bokehManger.OpenImage();
             InitializeTimer();
+            _bokehManger.OpenImage();
         }
 
         void InitializeBinding()
@@ -41,6 +44,11 @@ namespace BokehDemo
                 _dispearTimer.Stop();
             };
         }
+    
+        private void ImageGrid_ManipulationStarted(object sender, ManipulationStartedEventArgs e)
+        {
+            _bokehManger.SetPreAngel();
+        }
 
         private void ImageGrid_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
         {
@@ -49,8 +57,17 @@ namespace BokehDemo
                 //缩放
                 _bokehManger.ScaleChange(e.PinchManipulation.DeltaScale);
 
-                //旋转
-                _bokehManger.RotationChange(e.PinchManipulation.Current.PrimaryContact, e.PinchManipulation.Current.SecondaryContact, e.PinchManipulation.Current.Center);
+                _bokehManger.RotationChange(e.PinchManipulation.Current, e.PinchManipulation.Original);
+            }
+            else
+            {
+                while (TouchPanel.IsGestureAvailable)
+                {
+                    GestureSample sample = TouchPanel.ReadGesture();
+                    Point sampleDelta = new Point(sample.Delta.X, sample.Delta.Y);
+                    _bokehManger.PositionChange(sampleDelta);
+                }
+                _bokehManger.SetPreAngel();
             }
             _bokehManger.SetGradient();
         }
@@ -60,7 +77,6 @@ namespace BokehDemo
             _dispearTimer.Stop();
             _bokehManger.SetOpacity(0.3);
 
-            _bokehManger.SetPrePoint(e.GetPosition(ImageGrid));
             _bokehManger.SetMode(BokehMode.InsideMode);
         }
 
@@ -69,18 +85,7 @@ namespace BokehDemo
             _dispearTimer.Stop();
             _bokehManger.SetOpacity(0.3);
 
-            _bokehManger.SetPrePoint(e.GetPosition(ImageGrid));
             _bokehManger.SetMode(BokehMode.OutsideMode);
-        }
-
-        private void Inside_MouseMove(object sender, MouseEventArgs e)
-        {
-            _bokehManger.PositionChange(e.GetPosition(ImageGrid));
-        }
-
-        private void Outside_MouseMove(object sender, MouseEventArgs e)
-        {
-            _bokehManger.PositionChange(e.GetPosition(ImageGrid));
         }
 
         private void Allside_MouseLeave(object sender, MouseEventArgs e)
@@ -113,7 +118,6 @@ namespace BokehDemo
         }
 
         #endregion
-
 
         /// <summary>
         /// 计时器

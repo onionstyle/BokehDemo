@@ -20,7 +20,7 @@
             <RowDefinition Height="20*" />
         </Grid.RowDefinitions>
         <Grid x:Name="ShowClipGrid" Width="{Binding Path=ClipWidth}"  Height="{Binding Path=ClipHeight}"  Clip="{Binding Path=Clip}" Margin="{Binding Path=ClipMargin}" HorizontalAlignment="Left" VerticalAlignment="Top" >
-            <Grid  x:Name="ImageGrid" Margin="{Binding Path=Margin}"  HorizontalAlignment="Left" VerticalAlignment="Top"    ManipulationDelta="ImageGrid_ManipulationDelta" >
+            <Grid  x:Name="ImageGrid" Margin="{Binding Path=Margin}"  HorizontalAlignment="Left" VerticalAlignment="Top"  ManipulationStarted="ImageGrid_ManipulationStarted"   ManipulationDelta="ImageGrid_ManipulationDelta" >
                 <Image x:Name="ShowImage"  Source="{Binding Path=Source}"  Width="{Binding Path=Width}" Height="{Binding Path=Height}"    />
                 <Canvas x:Name="BokehCanvas"    Width="{Binding ElementName=ShowImage,Path=Width}" Height="{Binding ElementName=ShowImage,Path=Height}"   Clip="{Binding Path=Clip}"  Visibility="{Binding Path=Visibility}" >
                     <!--圆形渐变-->
@@ -36,8 +36,8 @@
                     </Rectangle>
                     <Grid  Width="{Binding Path=Width}" Height="{Binding Path=Height}" Margin="{Binding Path=Margin}" Opacity="{Binding Opacity}" Visibility="{Binding Path=EllipseVisibility}"  >
 
-                        <Ellipse   Fill="Transparent" StrokeDashArray="1,2" VerticalAlignment="Stretch"  HorizontalAlignment="Stretch" Stroke="White" StrokeThickness="2" MouseMove="Outside_MouseMove" MouseEnter="Outside_MouseEnter" MouseLeave="Allside_MouseLeave"   />
-                        <Ellipse  Fill="Transparent"  Width="{Binding Path=InsideWidth}" Height="{Binding Path=InsideWidth}"  Stroke="White" StrokeThickness="2" VerticalAlignment="Center" HorizontalAlignment="Center" MouseMove="Inside_MouseMove"  MouseEnter="Inside_MouseEnter" MouseLeave="Allside_MouseLeave"    />
+                        <Ellipse   Fill="Transparent" StrokeDashArray="1,2" VerticalAlignment="Stretch"  HorizontalAlignment="Stretch" Stroke="White" StrokeThickness="2"   MouseEnter="Outside_MouseEnter" MouseLeave="Allside_MouseLeave"   />
+                        <Ellipse  Fill="Transparent"  Width="{Binding Path=InsideWidth}" Height="{Binding Path=InsideWidth}"  Stroke="White" StrokeThickness="2" VerticalAlignment="Center" HorizontalAlignment="Center"   MouseEnter="Inside_MouseEnter" MouseLeave="Allside_MouseLeave"    />
                     </Grid>
                     <!--线性渐变-->
                     <Rectangle  Width="{Binding ElementName=ShowImage,Path=Width}" Height="{Binding ElementName=ShowImage,Path=Height}"  Fill="{Binding MaskBrush}" Visibility="{Binding Path=LineVisibility}"  >
@@ -64,8 +64,8 @@
                         <Grid.RenderTransform>
                             <RotateTransform Angle="{Binding Angle}"    />
                         </Grid.RenderTransform>
-                        <Rectangle  Fill="Transparent"   StrokeDashArray="1,2" Width="{Binding Path=Width}" Height="{Binding Path=Height}" HorizontalAlignment="Center" VerticalAlignment="Center"  StrokeThickness="2"   Stroke="White" MouseEnter="Outside_MouseEnter" MouseMove="Outside_MouseMove" MouseLeave="Allside_MouseLeave" />
-                        <Rectangle   Fill="Transparent"  Width="{Binding Path=InsideWidth}" Height="{Binding Path=Height}" HorizontalAlignment="Center" VerticalAlignment="Center"  StrokeThickness="2"  Stroke="White" MouseEnter="Inside_MouseEnter" MouseMove="Inside_MouseMove"    MouseLeave="Allside_MouseLeave"   />
+                        <Rectangle  Fill="Transparent"   StrokeDashArray="1,2" Width="{Binding Path=Width}" Height="{Binding Path=Height}" HorizontalAlignment="Center" VerticalAlignment="Center"  StrokeThickness="2"   Stroke="White" MouseEnter="Outside_MouseEnter"  MouseLeave="Allside_MouseLeave" />
+                        <Rectangle   Fill="Transparent"  Width="{Binding Path=InsideWidth}" Height="{Binding Path=Height}" HorizontalAlignment="Center" VerticalAlignment="Center"  StrokeThickness="2"  Stroke="White" MouseEnter="Inside_MouseEnter"    MouseLeave="Allside_MouseLeave"   />
                      </Grid>
                 </Canvas>
             </Grid>

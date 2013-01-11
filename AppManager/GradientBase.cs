@@ -13,7 +13,6 @@ namespace BokehDemo.AppManager
         {
         }
 
-
         /// <summary>
         ///  放大缩小时限制图形最大最小宽高,并调整位置
         /// </summary>
@@ -32,8 +31,10 @@ namespace BokehDemo.AppManager
         {
         }
 
-        public void Translation(Point discenter)
+        public void Translation(Point p)
         {
+            Point discenter = new Point(_bokehData.Margin.Left + _bokehData.Width / 2 + p.X, _bokehData.Margin.Top + _bokehData.Height / 2 + p.Y);
+
             if (discenter.X < 0 || discenter.X > _imageControl.Width)
             {
                 discenter.X = _bokehData.Margin.Left + _bokehData.Width / 2;
@@ -44,11 +45,6 @@ namespace BokehDemo.AppManager
                 discenter.Y = _bokehData.Margin.Top + _bokehData.Height / 2;
             }
             _bokehData.Margin = new Thickness(discenter.X - _bokehData.Width / 2, discenter.Y - _bokehData.Height / 2, 0, 0);
-        }
-
-        public double Radians(Point currPoint, Point pinPoint)
-        {
-            return Math.Atan2(currPoint.Y - pinPoint.Y, currPoint.X - pinPoint.X);
         }
 
         #region Property

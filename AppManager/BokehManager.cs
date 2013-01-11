@@ -8,6 +8,7 @@ using System.Diagnostics;
 using Windows.Storage.Streams;
 using System.Windows.Controls;
 using System.Windows.Shapes;
+using System.Windows.Input;
 namespace BokehDemo.AppManager
 {
     class BokehManager
@@ -19,6 +20,7 @@ namespace BokehDemo.AppManager
 
             _bokehData = new BokehData();
             _bokehData.PropertyChanged += BokehControl_PropertyChanged;
+
         }
 
         /// <summary>
@@ -51,7 +53,8 @@ namespace BokehDemo.AppManager
                 DataManager.Instance.SetMainData(new WriteableBitmap(bmp));
                 ShowImage();
                 //蒙版
-                _bokehData.MaskBrush = new SolidColorBrush() {Color = Color.FromArgb(255, 218, 81, 81) };
+                _bokehData.MaskBrush = new SolidColorBrush() { Color = Color.FromArgb(255, 218, 81, 81) };
+                _bokehData.Clip = new RectangleGeometry() { Rect = new Rect(0, 0, _imageControl.Width, _imageControl.Height) };
 
                 ModeChanger();
             }
@@ -154,22 +157,13 @@ namespace BokehDemo.AppManager
             SetGradient();
         }
 
-        public void SetPrePoint(Point p)
-        {
-           _prePosition = p;
-        }
-
         /// <summary>
         /// 移动图形
         /// </summary>
         /// <param name="p">新位置</param>
         public void PositionChange(Point p)
         {
-            //中心点距离边距的大小
-            Point discenter = new Point(_bokehData.Margin.Left + _bokehData.Width / 2 + p.X - _prePosition.X, _bokehData.Margin.Top + _bokehData.Height / 2 + p.Y - _prePosition.Y);
-            _prePosition = p;
-
-            _gradientBase.Translation(discenter);
+            _gradientBase.Translation(p);
 
              SetGradient();
         }
@@ -193,21 +187,20 @@ namespace BokehDemo.AppManager
             }
         }
 
-        public void RotationChange(Point currPoint, Point pinPoint, Point center)
+        public void SetPreAngel()
         {
-            if (_gradientBase is EllipseGradient) return;
-            if (_bokehMode==BokehMode.None||_preAngle == 0)
-            {
-                _preAngle = _gradientBase.Radians(currPoint, pinPoint);
-                return;
-            }
-            double curAngle = _gradientBase.Radians(currPoint, pinPoint);
-            double deltaAngle = 180 * (curAngle - _preAngle) / Math.PI;
-            _preAngle = 0;
-            if (deltaAngle > 30 || deltaAngle < -30) return;
-            _bokehData.Angle += deltaAngle;
+            _preAngle = _bokehData.Angle;
         }
 
+        public void RotationChange(PinchContactPoints current, PinchContactPoints origin)
+        {
+            if (_gradientBase is EllipseGradient) return;
+
+            double angleDelta = GetAngle(current.PrimaryContact, current.SecondaryContact) - GetAngle(origin.PrimaryContact, origin.SecondaryContact);
+          
+            _bokehData.Angle = _preAngle + angleDelta;
+        }
+  
         public void SetGradient()
         {
             _gradientBase.SetGradient();
@@ -224,6 +217,23 @@ namespace BokehDemo.AppManager
         public void SetOpacity(double opacity)
         {
             _bokehData.Opacity = opacity;
+        }
+
+        /// <summary>
+        /// 获取2点构成线段的角度
+        /// </summary>
+        private double GetAngle(Point primaryPoint, Point secondaryPoint)
+        {
+            Point directionVector = new Point(secondaryPoint.X - primaryPoint.X, secondaryPoint.Y - primaryPoint.Y);
+
+            double angle = Math.Atan2(directionVector.Y, directionVector.X);
+
+            if (angle < 0)
+            {
+                angle += 2 * Math.PI;
+            }
+
+            return angle * 180 / Math.PI;
         }
 
         private void BokehControl_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -253,10 +263,7 @@ namespace BokehDemo.AppManager
         #region Properties
 
         BokehMode _bokehMode;
-        /// <summary>
-        /// 起始位置
-        /// </summary>
-        private Point _prePosition;
+
         /// <summary>
         /// 起始旋转角度
         /// </summary>

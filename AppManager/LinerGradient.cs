@@ -22,7 +22,6 @@ namespace BokehDemo.AppManager
 
         public override void Initialize(double insideWidth, double outsideWidth)
         {
-            _bokehData.Clip = new RectangleGeometry() { Rect = new Rect(0, 0, _imageControl.Width, _imageControl.Height) };
             _bokehData.Height = Math.Sqrt(_imageControl.Width * _imageControl.Width + _imageControl.Height * _imageControl.Height);
             _bokehData.Height += _bokehData.Height;
 
