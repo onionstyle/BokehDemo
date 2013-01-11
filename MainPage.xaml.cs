@@ -17,7 +17,6 @@ namespace BokehDemo
         public MainPage()
         {
             InitializeComponent();
-            TouchPanel.EnabledGestures = GestureType.FreeDrag;
 
             InitializeBinding();
             InitializeTimer();
@@ -48,6 +47,7 @@ namespace BokehDemo
         private void ImageGrid_ManipulationStarted(object sender, ManipulationStartedEventArgs e)
         {
             _bokehManger.SetPreAngel();
+            TouchPanel.EnabledGestures = GestureType.FreeDrag;
         }
 
         private void ImageGrid_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
@@ -58,6 +58,8 @@ namespace BokehDemo
                 _bokehManger.ScaleChange(e.PinchManipulation.DeltaScale);
 
                 _bokehManger.RotationChange(e.PinchManipulation.Current, e.PinchManipulation.Original);
+
+                TouchPanel.EnabledGestures = GestureType.None;
             }
             else
             {
@@ -67,33 +69,24 @@ namespace BokehDemo
                     Point sampleDelta = new Point(sample.Delta.X, sample.Delta.Y);
                     _bokehManger.PositionChange(sampleDelta);
                 }
-                _bokehManger.SetPreAngel();
+                if (!TouchPanel.IsGestureAvailable)
+                {
+                    _bokehManger.SetPreAngel();
+                }
             }
             _bokehManger.SetGradient();
         }
 
-        private void Inside_MouseEnter(object sender, MouseEventArgs e)
+        private void All_MouseEnter(object sender, MouseEventArgs e)
         {
             _dispearTimer.Stop();
             _bokehManger.SetOpacity(0.3);
-
-            _bokehManger.SetMode(BokehMode.InsideMode);
-        }
-
-        private void Outside_MouseEnter(object sender, MouseEventArgs e)
-        {
-            _dispearTimer.Stop();
-            _bokehManger.SetOpacity(0.3);
-
-            _bokehManger.SetMode(BokehMode.OutsideMode);
         }
 
         private void Allside_MouseLeave(object sender, MouseEventArgs e)
         {
             _dispearTimer.Start();
             _bokehManger.SetOpacity(1);
-
-            _bokehManger.SetMode(BokehMode.None);
         }
 
         #region ApplicationBarButton

@@ -57,7 +57,7 @@ namespace BokehDemo.AppManager
         /// <summary>
         /// 内部最小宽度
         /// </summary>
-        protected int _minWidth = 10;
+        protected int _minWidth = 20;
 
         protected ImageControlData _imageControl = null;
 

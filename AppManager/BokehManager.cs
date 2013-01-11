@@ -171,20 +171,9 @@ namespace BokehDemo.AppManager
         //缩放
         public void ScaleChange(double scale)
         {
-            double value;
-            switch (_bokehMode)
-            {
-                case BokehMode.InsideMode:
-                    value = _bokehData.InsideValue * scale;
-                    if (value > 0 && value < 100)
-                        _bokehData.InsideValue = value;
-                    break;
-                case BokehMode.OutsideMode:
-                    value = _bokehData.OutsideValue * scale;
-                    if (value > 0 && value < 100)
-                        _bokehData.OutsideValue = value;
-                    break;
-            }
+            double value = _bokehData.InsideValue * scale;
+            if (value > 0 && value < 100)
+                _bokehData.InsideValue = value;
         }
 
         public void SetPreAngel()
@@ -204,14 +193,6 @@ namespace BokehDemo.AppManager
         public void SetGradient()
         {
             _gradientBase.SetGradient();
-        }
-
-        public void SetMode(BokehMode bokehMode)
-        {
-            if (_bokehMode != bokehMode)
-            {
-                _bokehMode = bokehMode;
-            }
         }
 
         public void SetOpacity(double opacity)
@@ -239,30 +220,25 @@ namespace BokehDemo.AppManager
         private void BokehControl_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             double width;
-            BokehMode bokehMode;
             switch (e.PropertyName)
             {
                 case "InsideValue":
                     width = _bokehData.InsideValue * DataManager.Instance.MaxWidth / 100;
                     if (width == _bokehData.InsideWidth) return;
-                    bokehMode = BokehMode.InsideMode;
-                    _gradientBase.ScaleRestrict(width, bokehMode);
+                    _gradientBase.ScaleRestrict(width, BokehMode.InsideMode);
                     SetGradient();
                     break;
                 case "OutsideValue":
                     width = _bokehData.OutsideValue * DataManager.Instance.MaxWidth / 100 + _bokehData.InsideWidth;
                     if (width == _bokehData.Width) return;
                     //改变外圈
-                    bokehMode = BokehMode.OutsideMode;
-                    _gradientBase.ScaleRestrict(width, bokehMode);
+                    _gradientBase.ScaleRestrict(width, BokehMode.OutsideMode);
                     SetGradient();
                     break;
             }
         }
 
         #region Properties
-
-        BokehMode _bokehMode;
 
         /// <summary>
         /// 起始旋转角度
@@ -295,7 +271,7 @@ namespace BokehDemo.AppManager
 
 
     /// <summary>
-    /// 鼠标操作模式
+    /// 操作模式
     /// </summary>
     public enum BokehMode
     {

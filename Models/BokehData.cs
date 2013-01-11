@@ -229,7 +229,6 @@ namespace BokehDemo.Models
         }
         #endregion
 
-
         /// <summary>
         /// 响应值变化事件
         /// </summary>

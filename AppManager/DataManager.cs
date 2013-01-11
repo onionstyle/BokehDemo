@@ -98,7 +98,7 @@ namespace BokehDemo.AppManager
         /// <summary>
         /// 图片显示最大高度
         /// </summary>
-        int _maxHeight = (int)Application.Current.Host.Content.ActualHeight - 104 - 139;//减去Appbar&&slider
+        int _maxHeight = (int)Application.Current.Host.Content.ActualHeight - 104 - 70;//减去Appbar&&slider
         public int MaxHeight
         {
             get { return _maxHeight; }

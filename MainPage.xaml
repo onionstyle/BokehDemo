@@ -17,9 +17,9 @@
     <Grid x:Name="LayoutRoot" Background="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition Height="80*" />
-            <RowDefinition Height="20*" />
+            <RowDefinition Height="10*" />
         </Grid.RowDefinitions>
-        <Grid x:Name="ShowClipGrid" Width="{Binding Path=ClipWidth}"  Height="{Binding Path=ClipHeight}"  Clip="{Binding Path=Clip}" Margin="{Binding Path=ClipMargin}" HorizontalAlignment="Left" VerticalAlignment="Top" >
+    <Grid x:Name="ShowClipGrid" Width="{Binding Path=ClipWidth}"  Height="{Binding Path=ClipHeight}"  Clip="{Binding Path=Clip}" Margin="{Binding Path=ClipMargin}" HorizontalAlignment="Left" VerticalAlignment="Top" >
             <Grid  x:Name="ImageGrid" Margin="{Binding Path=Margin}"  HorizontalAlignment="Left" VerticalAlignment="Top"  ManipulationStarted="ImageGrid_ManipulationStarted"   ManipulationDelta="ImageGrid_ManipulationDelta" >
                 <Image x:Name="ShowImage"  Source="{Binding Path=Source}"  Width="{Binding Path=Width}" Height="{Binding Path=Height}"    />
                 <Canvas x:Name="BokehCanvas"    Width="{Binding ElementName=ShowImage,Path=Width}" Height="{Binding ElementName=ShowImage,Path=Height}"   Clip="{Binding Path=Clip}"  Visibility="{Binding Path=Visibility}" >
@@ -35,9 +35,13 @@
                         </Rectangle.OpacityMask>
                     </Rectangle>
                     <Grid  Width="{Binding Path=Width}" Height="{Binding Path=Height}" Margin="{Binding Path=Margin}" Opacity="{Binding Opacity}" Visibility="{Binding Path=EllipseVisibility}"  >
-
-                        <Ellipse   Fill="Transparent" StrokeDashArray="1,2" VerticalAlignment="Stretch"  HorizontalAlignment="Stretch" Stroke="White" StrokeThickness="2"   MouseEnter="Outside_MouseEnter" MouseLeave="Allside_MouseLeave"   />
-                        <Ellipse  Fill="Transparent"  Width="{Binding Path=InsideWidth}" Height="{Binding Path=InsideWidth}"  Stroke="White" StrokeThickness="2" VerticalAlignment="Center" HorizontalAlignment="Center"   MouseEnter="Inside_MouseEnter" MouseLeave="Allside_MouseLeave"    />
+                        <!-- 准星 -->
+                        <Canvas  Width="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center"   >
+                            <Line X1="10" Y1="0" X2="10" Y2="20" Stroke="White" StrokeThickness="2" />
+                            <Line X1="0" Y1="10" X2="20" Y2="10" Stroke="White" StrokeThickness="2" />
+                        </Canvas>
+                        <Ellipse  Fill="Transparent"  Width="{Binding Path=InsideWidth}" Height="{Binding Path=InsideWidth}"  Stroke="White" StrokeThickness="2" VerticalAlignment="Center" HorizontalAlignment="Center"       />
+                        <Ellipse   Fill="Transparent" StrokeDashArray="1,2" VerticalAlignment="Stretch"  HorizontalAlignment="Stretch" Stroke="White" StrokeThickness="2"   MouseEnter="All_MouseEnter" MouseLeave="Allside_MouseLeave"   />
                     </Grid>
                     <!--线性渐变-->
                     <Rectangle  Width="{Binding ElementName=ShowImage,Path=Width}" Height="{Binding ElementName=ShowImage,Path=Height}"  Fill="{Binding MaskBrush}" Visibility="{Binding Path=LineVisibility}"  >
@@ -64,26 +68,15 @@
                         <Grid.RenderTransform>
                             <RotateTransform Angle="{Binding Angle}"    />
                         </Grid.RenderTransform>
-                        <Rectangle  Fill="Transparent"   StrokeDashArray="1,2" Width="{Binding Path=Width}" Height="{Binding Path=Height}" HorizontalAlignment="Center" VerticalAlignment="Center"  StrokeThickness="2"   Stroke="White" MouseEnter="Outside_MouseEnter"  MouseLeave="Allside_MouseLeave" />
-                        <Rectangle   Fill="Transparent"  Width="{Binding Path=InsideWidth}" Height="{Binding Path=Height}" HorizontalAlignment="Center" VerticalAlignment="Center"  StrokeThickness="2"  Stroke="White" MouseEnter="Inside_MouseEnter"    MouseLeave="Allside_MouseLeave"   />
-                     </Grid>
+                        <Rectangle   Fill="Transparent"  Width="{Binding Path=InsideWidth}" Height="{Binding Path=Height}" HorizontalAlignment="Center" VerticalAlignment="Center"  StrokeThickness="2"  Stroke="White" />
+                        <Rectangle  Fill="Transparent"   StrokeDashArray="1,2" Width="{Binding Path=Width}" Height="{Binding Path=Height}" HorizontalAlignment="Center" VerticalAlignment="Center"  StrokeThickness="2"   Stroke="White" MouseEnter="All_MouseEnter"  MouseLeave="Allside_MouseLeave" />
+                      </Grid>
                 </Canvas>
             </Grid>
         </Grid>
-
         <Grid  x:Name="BokehControlGrid" Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="50*" />
-                <RowDefinition Height="50*" />
-            </Grid.RowDefinitions>
-            <Grid>
-                <TextBlock Text="范围" FontSize="24" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="70,0,0,10" />
-                <Slider   Value="{Binding OutsideValue,Mode=TwoWay}" Minimum="0" Maximum="100" Width="300" Height="25" Background="#7FD6D6D6"   Foreground="#B2ABD5F1"     Style="{StaticResource SliderStyle}" Margin="142,21,38,24"  />
-            </Grid>
-            <Grid  Grid.Row="1" >
-                <TextBlock Text="大小"  FontSize="24" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="70,0,0,10" />
-                <Slider   Value="{Binding InsideValue,Mode=TwoWay}" Minimum="0" Maximum="100" Width="300" Height="25" Background="#7FD6D6D6"   Foreground="#B2ABD5F1"   Style="{StaticResource SliderStyle}" Margin="142,21,38,24"  />
-            </Grid>
+                <TextBlock Text="外圈大小"  FontSize="24" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="30,0,0,10" />
+                <Slider   Value="{Binding OutsideValue,Mode=TwoWay}" Minimum="0" Maximum="100" Width="300" Height="25" Background="#7FD6D6D6"   Foreground="#B2ABD5F1"   Style="{StaticResource SliderStyle}" Margin="142,21,38,24"  />
         </Grid>
     </Grid>
 
